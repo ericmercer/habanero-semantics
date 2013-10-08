@@ -60,7 +60,7 @@
 
 (define-extended-language rpp rpp-surface
   (e ....
-     (raw m (v)))
+     (raw m (v ...)))
   ;; eval syntax
   (h mt
      (h [v -> v]))
@@ -68,7 +68,7 @@
      (η [x -> v]))
   (state (μ h η e k))
   (k ret
-     (m () -> k)
+     (m (v ...) * (e ...) -> k)
      (* binop e -> k)
      (v binop * -> k)
      (x := * -> k)
@@ -121,25 +121,23 @@
         "if-then-else")
 
     ; method invocation
-   (--> (μ h η v (m (e_0 e_1 ...) -> k))
+   (--> (μ h η (m (e_0 e_1 ...)) k)
         (μ h η e_0 (m () * (e_1 ...) -> k))
         "method invocation - arg0 eval")
    (--> (μ h η v_i (m (v_a ...) * (e_0 e_1 ...) -> k))
         (μ h η e_0 (m (v_a ... v_i) * (e_1 ...) -> k))
         "method invocation - argi eval")
-   (--> (μ h η (m ()))
+   (--> (μ h η (m ()) k)
         (μ h η (raw m ()) k)
         "method invocation - no args")
    (--> (μ h η v_1 (m (v_0 ...) * () -> k))
         (μ h η (raw m (v_0 ... v_1)) k)
         "method invocation - args")
    (--> (μ h η (raw m (v_x ...)) k)
-        (μ h_0 η_0 e_m (pop η k))
+        (μ h η_0 e_m (pop η k))
         "raw method invocation"
-        (where (m (x_m ...) e_m) (method-lookup μ m))
-        (where (v_0 ...) (h-malloc-n h ,(length (term (v_x ...)))))
-        (where h_0 (h-extend* h [v_0 -> v_x] ...))
-        (where η_0 (η-extend* η [x_m -> v_0] ...)))
+        (where ((x_m ...) e_m) (method-lookup μ m))
+        (where η_0 (η-extend* η [x_m -> v_x] ...)))
   
    ; variable access
    (--> (μ h η x k)
@@ -205,7 +203,7 @@
 (define-metafunction rpp
   h-malloc-n : h number -> (v ...)
   [(h-malloc-n h number)
-   (h-malloc-n-helper h (h-max h) number)])
+   (h-malloc-n-helper (h-max h) number)])
 
 (define-metafunction rpp
   storelike-lookup : any any -> any
